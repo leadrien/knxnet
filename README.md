@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/leadrien/knxnet.svg?branch=master)](https://travis-ci.org/leadrien/knxnet)
+
 
 # KNXNET
 
