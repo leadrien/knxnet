@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+script:
+  - python setup.py install
+  - python tests/knxdatagram_unit_test.py
+branches:
+  only:
+    - master

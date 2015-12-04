@@ -23,7 +23,7 @@ setup(
     license="HES-SO 2015, Project EMG4B",
     keywords="KNX",
     packages=['knxnet', 'tests'],
-    long_description=read('README'),
+    long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
     ],
