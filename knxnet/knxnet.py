@@ -8,7 +8,7 @@ from enum import Enum
 __author__ = "Adrien Lescourt"
 __copyright__ = "HES-SO 2015, Project EMG4B"
 __credits__ = ["Adrien Lescourt"]
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __email__ = "adrien.lescourt@gmail.com"
 __status__ = "Prototype"
 
@@ -145,7 +145,7 @@ class TunnellingRequest(KnxnetFrame):
         self.channel_id = channel_id
         self.data = data
         self.data_size = data_size
-        self.apci = apci  # (0x2 == group value write)
+        self.apci = apci
 
     @classmethod
     def create_from_frame(cls, frame):
@@ -177,14 +177,14 @@ class TunnellingRequest(KnxnetFrame):
         return cls(header, dest_addr_group, channel_id, data, data_size, apci)
 
     @classmethod
-    def create_from_data(cls, dest_addr_group, channel_id, data, data_size, apci=0x2):
+    def create_from_data(cls, dest_addr_group, channel_id, data, data_size, apci):
         """
         Create the Tunnelling request object from data
         :param dest_addr_group: GroupAddress object, or string
         :param channel_id: 1 byte with channel ID
         :param data: effective data
         :param data_size: data size in byte
-        :param apci: APCI command. 0x2 is group value write
+        :param apci: APCI command. 0x2 is group value write    0 is group value read
         """
         frame_length = 0x14 + data_size
         header = KnxnetHeader.create_from_data(ServiceTypeDescriptor.TUNNELLING_REQUEST, frame_length)
