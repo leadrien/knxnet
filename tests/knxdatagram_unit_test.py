@@ -144,11 +144,13 @@ class KnxdatagramTestCase(unittest.TestCase):
         t1_channel_id = 0x7
         t1_data = 0x01
         t1_data_size = 1
+        t1_apci = 0x02
         t1_tunnel_req = create_frame(ServiceTypeDescriptor.TUNNELLING_REQUEST,
                                      t1_dest_addr,
                                      t1_channel_id,
                                      t1_data,
-                                     t1_data_size)
+                                     t1_data_size,
+                                     t1_apci)
         self.assertEqual(t1_tunnel_req.frame, t1_b)
         print('Success')
 
@@ -181,11 +183,13 @@ class KnxdatagramTestCase(unittest.TestCase):
         t2_channel_id = 0x12
         t2_data = 0xab
         t2_data_size = 2
+        t2_apci = 0x02
         t2_tunnel_req = create_frame(ServiceTypeDescriptor.TUNNELLING_REQUEST,
                                      t2_dest_addr,
                                      t2_channel_id,
                                      t2_data,
-                                     t2_data_size)
+                                     t2_data_size,
+                                     t2_apci)
         self.assertEqual(t2_tunnel_req.frame, t2_b)
         print('Success')
 
