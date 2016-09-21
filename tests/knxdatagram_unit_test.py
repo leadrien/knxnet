@@ -229,7 +229,7 @@ class KnxdatagramTestCase(unittest.TestCase):
         b.append(0x0A)
         b.append(0x04)
         b.append(0x01)  # channel_id
-        b.append(0x01)  # control enpoint
+        b.append(0x00)  # sequence counter
         b.append(0x00)
         channel_id = 1
         status = 0

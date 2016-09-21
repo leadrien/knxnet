@@ -7,8 +7,8 @@ from enum import Enum
 
 __author__ = "Adrien Lescourt"
 __copyright__ = "HES-SO 2015, Project EMG4B"
-__credits__ = ["Adrien Lescourt"]
-__version__ = "1.0.1"
+__credits__ = ["Adrien Lescourt", "Bouchedakh Mohamed Nizar "]
+__version__ = "1.0.2"
 __email__ = "adrien.lescourt@gmail.com"
 __status__ = "Prototype"
 
@@ -138,14 +138,29 @@ class TunnellingRequest(KnxnetFrame):
     TunnellingRequest KNXnet/IP frame
     """
 
-    def __init__(self, knxnet_header, dest_addr_group, channel_id, data, data_size, apci):
+    def __init__(self, knxnet_header, dest_addr_group, channel_id, data, data_size, apci, data_service, sequence_counter):
         super().__init__()
         self.header = knxnet_header
         self.dest_addr_group = dest_addr_group
         self.channel_id = channel_id
+        self.data_service = data_service  # See Data Service under
+        """
+        FROM NETWORK LAYER TO DATA LINK LAYER
+        – L_Raw.req 0x10
+        – L_Data.req 0x11 Data Service. Primitive used for transmitting a data frame
+        – L_Poll_Data.req 0x13 Poll Data Service
+        FROM DATA LINK LAYER TO NETWORK LAYER
+        – L_Poll_Data.con 0x25 Poll Data Service
+        – L_Data.ind 0x29 Data Service. Primitive used for receiving a data frame
+        – L_Busmon.ind 0x2B Bus Monitor Service
+        – L_Raw.ind 0x2D
+        – L_Data.con 0x2E Data Service. Primitive used for local confirmation that a frame was sent (does not indicate a successful receive though)
+        – L_Raw.con 0x2F )
+        """
         self.data = data
         self.data_size = data_size
-        self.apci = apci
+        self.apci = apci  # (0x0 == group value read; 0x1 == group value response; 0x2 == group value write)
+        self.sequence_counter = sequence_counter
 
     @classmethod
     def create_from_frame(cls, frame):
@@ -163,6 +178,8 @@ class TunnellingRequest(KnxnetFrame):
         if len(frame) != header.frame_length:
             raise KnxnetException('Invalid frame: effective total length != announced total length')
         channel_id = raw_body[1]
+        sequence_counter = raw_body[2]
+        data_service = raw_body[4]
         dest_addr_group = GroupAddress.from_bytes(raw_body[10:12])
         data_size = raw_body[12]
         if data_size > 2:
@@ -174,10 +191,10 @@ class TunnellingRequest(KnxnetFrame):
             data = raw_body[14] & 1
         elif data_size == 2:  # 8 bits unsigned
             data = raw_body[15]
-        return cls(header, dest_addr_group, channel_id, data, data_size, apci)
+        return cls(header, dest_addr_group, channel_id, data, data_size, apci, data_service, sequence_counter)
 
     @classmethod
-    def create_from_data(cls, dest_addr_group, channel_id, data, data_size, apci):
+    def create_from_data(cls, dest_addr_group, channel_id, data, data_size, apci=0x2, data_service=0x11, sequence_counter=0x0):
         """
         Create the Tunnelling request object from data
         :param dest_addr_group: GroupAddress object, or string
@@ -192,7 +209,7 @@ class TunnellingRequest(KnxnetFrame):
             dest = dest_addr_group
         else:
             dest = GroupAddress.from_str(dest_addr_group)
-        return cls(header, dest, channel_id, data, data_size, apci)
+        return cls(header, dest, channel_id, data, data_size, apci, data_service, sequence_counter)
 
     @property
     def frame(self):
@@ -201,10 +218,10 @@ class TunnellingRequest(KnxnetFrame):
         # Connection header
         frame.append(0x04)  # structure length
         frame.append(self.channel_id & 0xff)  # channel id
-        frame.append(0x00)  # sequence counter
+        frame.append(self.sequence_counter)  # sequence counter
         frame.append(0x00)  # reserved
         # cEMI
-        frame.append(0x11)  # message code = data service transmitting
+        frame.append(self.data_service) #frame.append(0x11)  # message code = data service transmitting
         frame.append(0x00)  # no additionnal info
         frame.append(0xbc)  # control byte
         frame.append(0xe0)  # DRL byte
@@ -227,6 +244,10 @@ class TunnellingRequest(KnxnetFrame):
         out += '{:>10}\n'.format(str(self.dest_addr_group))
         out += '{:<25}'.format('channel_id')
         out += '{:>10}\n'.format(hex(self.channel_id))
+        out += '{:<25}'.format('sequence_counter')
+        out += '{:>10}\n'.format(hex(self.sequence_counter))
+        out += '{:<25}'.format('data_service')
+        out += '{:>10}\n'.format(hex(self.data_service))
         out += '{:<25}'.format('data')
         out += '{:>10}\n'.format(hex(self.data))
         out += '{:<25}'.format('data_size')
@@ -244,11 +265,12 @@ class TunnellingAck(KnxnetFrame):
     Tunnelling ack KNXnet/IP frame
     """
 
-    def __init__(self, knxnet_header, channel_id, status):
+    def __init__(self, knxnet_header, channel_id, status, sequence_counter):
         super().__init__()
         self.header = knxnet_header
         self.channel_id = channel_id
         self.status = status
+        self.sequence_counter = sequence_counter
 
     @classmethod
     def create_from_frame(cls, frame):
@@ -262,21 +284,22 @@ class TunnellingAck(KnxnetFrame):
         if len(frame) != header.frame_length:
             raise KnxnetException('Invalid frame: effective total length != announced total length')
         channel_id = raw_body[1]
+        sequence_counter = raw_body[2]
         status = raw_body[3]
-        return cls(header, channel_id, status)
+        return cls(header, channel_id, status, sequence_counter)
 
     @classmethod
-    def create_from_data(cls, channel_id, status):
+    def create_from_data(cls, channel_id, status, sequence_counter=0x0):
         frame_length = 10
         header = KnxnetHeader.create_from_data(ServiceTypeDescriptor.TUNNELLING_ACK, frame_length)
-        return cls(header, channel_id, status)
+        return cls(header, channel_id, status, sequence_counter)
 
     @property
     def frame(self):
         frame = self.header.frame
         frame.append(0x04)  # structure length
         frame.append(self.channel_id)
-        frame.append(0x01)  # data size
+        frame.append(self.sequence_counter)
         frame.append(self.status)
         return frame
 
@@ -284,6 +307,8 @@ class TunnellingAck(KnxnetFrame):
         out = str(self.header)
         out += '{:<25}'.format('channel_id')
         out += '{:>10}\n'.format(str(self.channel_id))
+        out += '{:<25}'.format('sequence_counter')
+        out += '{:>10}\n'.format(str(self.sequence_counter))
         out += '{:<25}'.format('status')
         out += '{:>10}\n'.format(str(self.status))
         return out

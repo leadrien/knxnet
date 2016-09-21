@@ -7,7 +7,7 @@ from setuptools import setup
 __author__ = "Adrien Lescourt"
 __copyright__ = "HES-SO 2014, Project EMG4B"
 __credits__ = ["Adrien Lescourt"]
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __email__ = "adrien.lescourt@gmail.com"
 __status__ = "Prototype"
 
@@ -17,7 +17,7 @@ def read(fname):
 
 setup(
     name="knxnet",
-    version="1.0.1",
+    version="1.0.2",
     author="Adrien Lescourt",
     author_email="adrien.lescourt@gmail.com",
     description="Knxnet datagram frame creator / handler",
