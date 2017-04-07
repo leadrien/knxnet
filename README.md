@@ -82,34 +82,24 @@ then you have access to all fields in the KNX frame
 * Parameters type:
 
     *CONTROL_ENDPOINT* is a Hpai object or a tuple with IP as string and port as int: through NAT, put everything to zero ('0.0.0.0', 0)
-    
+
     *DATA_ENDPOINT* is a Hpai object or a tuple with IP as string and port as int: through NAT, put everything to zero ('0.0.0.0', 0)
-    
+
     *CHANNEL_ID* is a byte
-    
+
     *STATUS* is a byte: 0 = all ok
-    
+
     *DEST_GROUP_ADDR* is the destination group address as string '16/5/2' or as GroupAdress object
-    
+
     *DATA* is a datapoint type (**only boolean and 8 bit unsigned are currently supported**)
-    
+
     *DATA_SIZE* in byte
 
 
 
-* Basic KNXnet usage:
-```python
-    -> Connection request
-    <- Connection response
-    -> Connection state request
-    <- Connection state response
-    -> Tunnelling request
-    <- Tunnelling ack
-    -> Disconnect request
-    <- Disconnect response
-```
-
+![Tunnelling](https://github.com/leadrien/knxnet/blob/master/knx_tunnelling.png)
 
 # Example
 
-You can test the library with the simple local client/server examples: **test_knx_server.py** and **test_knx_client.py**.
+Check [Actuasim](https://github.com/leadrien/actuasim) project to see an example
+of use of the knxnet library. The main application work as a server. A sample client can be found in `tests` folder.
